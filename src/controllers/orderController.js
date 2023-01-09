@@ -75,10 +75,10 @@ const createOrder = async function (req, res) {
 
         let result = await orderModel.create(data);
         //console.log(result)
-        if (result) {let cartUpdation = await cartModel.updateOne({ _id: findingCart._id }, { items: [], totalPrice: 0, totalItems: 0 });}
-
-        return res.status(201).send({ status: true, message: "Success", data: result })
-
+        
+        res.status(201).send({ status: true, message: "Success", data: result })
+        
+        await cartModel.updateOne({ _id: findingCart._id }, { items: [], totalPrice: 0, totalItems: 0 });
     }
     catch (error) {
         return res.status(500).send({ status: false, message: error.message })
@@ -133,7 +133,7 @@ const updateOrder = async function (req, res) {
             return res.status(404).send({ status: false, message: "No order found" })
         }
         if (findOrder.isDeleted == true) {
-            return res.status(404).send({ status: false, message: "order is aready deleted" })
+            return res.status(404).send({ status: false, message: "order is already deleted" })
         }
         //============================ if order status is completed =================================
         if (findOrder.status === "completed") {

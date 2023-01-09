@@ -58,8 +58,7 @@ const createCart = async function (req, res) {
                     let uptotal = (validCart.totalPrice + (productExist.price)).toFixed(2)
                     productInCart[i].quantity = newCount
                     validCart.totalPrice = uptotal
-                    await validCart.save();
-                    // await validCart.populate({ path: "items.productId", select: { price: 1, title: 1, productImage: 1, _id: 0 } })
+                    await validCart.save()
                     return res.status(201).send({ status: true, message: 'Success', data: validCart })
                 }
             }
@@ -70,7 +69,6 @@ const createCart = async function (req, res) {
             let count = validCart.totalItems
             validCart.totalItems = count + 1
             await validCart.save()
-            // await validCart.populate({ path: "items.productId", select: { price: 1, title: 1, productImage: 1, _id: 0 } })
             return res.status(201).send({ status: true, message: 'Success', data: validCart })
         }
         //==================================== if user does not have cart ==============================================
@@ -82,7 +80,6 @@ const createCart = async function (req, res) {
         }
         obj['totalItems'] = obj.items.length
         let result = await cartModel.create(obj)
-        // await result.populate({ path: "items.productId", select: { price: 1, title: 1, productImage: 1, _id: 0 } })
         return res.status(201).send({ status: true, message: 'Success', data: result })
     }
     catch (error) {
@@ -101,8 +98,8 @@ const updateCart = async function (req, res) {
         if (!isValidRequestBody(body))
             return res.status(400).send({ status: false, message: "body cant't be empty Please enter some data" });
 
-        //=========================== only 2 keys should be entered in body ============================
-        if (!(cartId || removeProduct || productId)) {
+        //=========================== only 3 keys should be entered in body ============================
+        if (!(cartId && removeProduct && productId)) {
             return res.status(400).send({ status: false, message: "Provie valid keys to update a cart like: cartId, productId removeProduct" })
         }
 
@@ -139,27 +136,27 @@ const updateCart = async function (req, res) {
         let indexNumber = cartExist.items.indexOf(productArr[0]) // return index no of productArr
 
         //============================ if removeProduct is present ===================================
-            if (isValidNumber(removeProduct)) {
-                if (!(removeProduct == 0 || removeProduct == 1)) {
-                    return res.status(400).send({ status: false, message: "removeProduct can either be 0 or 1" })
-                }
-                if (removeProduct == 0) {
-                    cartExist.totalPrice = (cartExist.totalPrice - (findProduct.price * cartExist.items[indexNumber].quantity)).toFixed(2) //to fixed is used to fix the decimal value to absolute value/or rounded value
+        if (isValidNumber(removeProduct)) {
+            if (!(removeProduct == 0 || removeProduct == 1)) {
+                return res.status(400).send({ status: false, message: "removeProduct can either be 0 or 1" })
+            }
+            if (removeProduct == 0) {
+                cartExist.totalPrice = (cartExist.totalPrice - (findProduct.price * cartExist.items[indexNumber].quantity)).toFixed(2) //to fixed is used to fix the decimal value to absolute value/or rounded value
+                cartExist.items.splice(indexNumber, 1)
+                cartExist.totalItems = cartExist.items.length
+                await cartExist.save()
+                //await cartExist.populate({ path: "items.productId", select: { price: 1, title: 1, productImage: 1, _id: 0 } })
+            }
+            if (removeProduct == 1) {
+                cartExist.items[indexNumber].quantity -= 1;
+                cartExist.totalPrice = (cartExist.totalPrice - findProduct.price).toFixed(2)
+                if (cartExist.items[indexNumber].quantity == 0) {
                     cartExist.items.splice(indexNumber, 1)
-                    cartExist.totalItems = cartExist.items.length
-                    await cartExist.save()
-                    await cartExist.populate({ path: "items.productId", select: { price: 1, title: 1, productImage: 1, _id: 0 } })
                 }
-                if (removeProduct == 1) {
-                    cartExist.items[indexNumber].quantity -= 1;
-                    cartExist.totalPrice = (cartExist.totalPrice - findProduct.price).toFixed(2)
-                    if (cartExist.items[indexNumber].quantity == 0) {
-                        cartExist.items.splice(indexNumber, 1)
-                    }
-                    cartExist.totalItems = cartExist.items.length
-                    await cartExist.save()
-                    await cartExist.populate({ path: "items.productId", select: { price: 1, title: 1, productImage: 1, _id: 0 } })
-                }
+                cartExist.totalItems = cartExist.items.length
+                await cartExist.save()
+                await cartExist.populate({ path: "items.productId", select: { price: 1, title: 1, productImage: 1, _id: 0 } })
+            }
         }
         return res.status(200).send({ status: true, message: "Success", data: cartExist })
     }

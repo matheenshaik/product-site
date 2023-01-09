@@ -194,7 +194,7 @@ const updateProduct = async function (req, res) {
             data.title = title
         }
 
-        //================================= if discription is present ==================================
+        //================================= if description is present ==================================
         if (description) {
             if (!isValid(description)) return res.status(400).send({ status: false, message: "description can not be empty" })
             data.description = description

@@ -90,7 +90,7 @@ const login = async function (req, res) {
         if (!isValidMail.test(email)) return res.status(400).send({ status: false, message: "email must be in correct format for e.g. xyz@abc.com" })
 
         let userInDb = await userModel.findOne({ email: email });
-        if (!userInDb) return res.status(401).send({ status: false, message: "email or password is not corerct" })
+        if (!userInDb) return res.status(400).send({ status: false, message: "email is not corerct" })
 
         const validPassword = await bcrypt.compare(password, userInDb.password)
         if (!validPassword) {
@@ -108,7 +108,7 @@ const login = async function (req, res) {
             userId: userInDb._id.toString(),
             token: token
         }
-        res.status(201).send({ status: true, message: "Login successfully", data: data });
+        res.status(200).send({ status: true, message: "Login successfully", data: data });
     }
     catch (err) {
         console.log("catch error :", err.message)
